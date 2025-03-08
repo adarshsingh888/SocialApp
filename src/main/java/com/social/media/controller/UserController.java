@@ -1,5 +1,6 @@
 package com.social.media.controller;
 
+import com.social.media.apiresponse.WeatherResponse;
 import com.social.media.dto.UserUpdateDTO;
 import com.social.media.entity.User;
 import com.social.media.service.EmailService;
@@ -60,7 +61,7 @@ public class UserController {
         return new ResponseEntity<>(message, HttpStatus.OK); // 200 OK
     }
     @GetMapping("/weather/{place}")
-    public ResponseEntity<?> getWeather(@PathVariable String place){
+    public ResponseEntity<WeatherResponse> getWeather(@PathVariable String place){
         return new ResponseEntity<>(weatherServices.getWeather(place),HttpStatus.OK);
     }
     @PostMapping("/{userId}")
