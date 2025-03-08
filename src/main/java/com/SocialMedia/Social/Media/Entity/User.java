@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.lang.annotation.Documented;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -28,16 +29,16 @@ public class User  {
     @NonNull
     private String firstname;
     private String lastname;
-    private boolean isAdmin = false; // Default value
     private String profilePicture;
     private String coverPicture;
     private String about;
     private String livesIn;
     private String worksAt;
+    private String gmail;
     private String relationship;
     private String country;
-    private List<String> followers; // List of follower IDs
-    private List<String> following;
+    private Set<ObjectId> followers; // List of follower IDs
+    private Set<ObjectId> following;
     private List<ObjectId> posts;
     private List<String> roles;
 

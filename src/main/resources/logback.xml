@@ -20,7 +20,7 @@
                 10MB
             </maxFileSize>
             <maxHistory>
-                10
+                5
             </maxHistory>
         </rollingPolicy>
     </appender>

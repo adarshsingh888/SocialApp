@@ -5,24 +5,27 @@ import com.SocialMedia.Social.Media.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-@Component
+@Service
 @Slf4j
 public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder=new BCryptPasswordEncoder();  // Inject PasswordEncoder
-
 //    private static final Logger logger= LoggerFactory.getLogger(UserService.class);  // after using annotation @Slf4j we dont did this line
-
     public User addnewUser(User user) {
      try{
          String encodedPassword = passwordEncoder.encode(user.getPassword());
@@ -32,10 +35,6 @@ public class UserService {
          //throw new Exception("this logging testing");
      }catch(Exception e){
          log.error("error for username {}",user.getUsername());
-//         log.info("sdfasasdsafsfs");
-//         log.debug("sdfasasdsafsfs");
-//         log.warn("sdfasasdsafsfs");
-//         log.trace("sdfasasdsafsfs");
          return null;
      }
     }
@@ -49,6 +48,8 @@ public class UserService {
         updatedUser.setPassword(encodedPassword);
         updatedUser.setRoles(Arrays.asList("USER"));
         User user=userRepository.findByUsername(userName);
+        if(user.getGmail() != null){
+        emailService.sendEmail(user.getGmail(),"Alert !","Your Social media account data is edited");}
         if(userRepository.findByUsername(updatedUser.getUsername()) != null &&
                 !userRepository.findByUsername(updatedUser.getUsername()).getUsername().equals(userName)) return null;
         updatedUser.setId(user.getId());
@@ -82,5 +83,41 @@ public class UserService {
 
     public void save(User u) {
         userRepository.save(u);
+    }
+
+    public String followUnfollow(ObjectId userId,String username) {
+        User user=userRepository.findByUsername(username);
+        Optional<User> followingUser=userRepository.findById(userId);
+        User user2=followingUser.get();
+        if(user == null) return null;
+        if(user.getFollowing()== null) user.setFollowing(new HashSet<>());
+        if(user2.getFollowers()== null) user2.setFollowers(new HashSet<>());
+        if(user.getFollowing().contains(userId)){
+            user.getFollowing().remove(userId);
+            user2.getFollowers().remove(user.getId());
+            userRepository.save(user);
+            userRepository.save(user2);
+            return "Unfollowed the User";
+        }
+        else{
+            user.getFollowing().add(userId);
+            user2.getFollowers().add(user.getId());
+            userRepository.save(user);
+            userRepository.save(user2);
+            return "User followed";
+        }
+
+    }
+
+    public List<User> unFollowedUser(String userName){
+        User user=userRepository.findByUsername(userName);
+        if(user.getFollowing()==null) return null;
+        return userRepository.findUnfollowedUsers(user.getFollowing(),user.getId());
+    }
+
+    public List<User> followedUser(String userName) {
+        User user=userRepository.findByUsername(userName);
+        if(user.getFollowing()==null) return null;
+        return userRepository.findFollowedUsers(user.getFollowing(),user.getId());
     }
 }
