@@ -36,9 +36,9 @@ public class PublicController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<User> signUp(@RequestBody UserDTO userDTO) {
         if(userService.findByUsername(userDTO.getUsername()) != null) {
-            return new ResponseEntity<>("Username already exits! Please try another username.", HttpStatus.CONFLICT);
+            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
         }
         User user = new User();
         user.setFirstname(userDTO.getFirstname());
@@ -48,7 +48,7 @@ public class PublicController {
         return new ResponseEntity<>(userService.addnewUser(user), HttpStatus.CREATED); // 201 Created
     }
     @PostMapping("/login")
-    public ResponseEntity<?> logIn(@RequestBody LoginDTO loginDTO){
+    public ResponseEntity<String> logIn(@RequestBody LoginDTO loginDTO){
         try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));

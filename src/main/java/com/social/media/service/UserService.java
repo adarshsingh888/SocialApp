@@ -1,10 +1,14 @@
 package com.social.media.service;
 
+import com.social.media.dto.UserUpdateDTO;
 import com.social.media.entity.User;
 import com.social.media.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,18 +43,46 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public User updateUser(String userName, User updatedUser) {
-        String encodedPassword = passwordEncoder.encode(updatedUser.getPassword());
-        updatedUser.setPassword(encodedPassword);
-        updatedUser.setRoles(Arrays.asList("USER"));
-        User user=userRepository.findByUsername(userName);
-        if(user.getGmail() != null){
-        emailService.sendEmail(user.getGmail(),"Alert !","Your Social media account data is edited");}
-        if(userRepository.findByUsername(updatedUser.getUsername()) != null &&
-                !userRepository.findByUsername(updatedUser.getUsername()).getUsername().equals(userName)) return null;
-        updatedUser.setId(user.getId());
-        return userRepository.save(updatedUser);
+    public ResponseEntity<User> updateUser(String userName, UserUpdateDTO updatedUserDTO) {
+        // Find the existing user
+        User user = userRepository.findByUsername(userName);
+        if (user == null) {
+           return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+
+        // Check if the new username is already taken by another user
+        User existingUser = userRepository.findByUsername(updatedUserDTO.getUsername());
+        if (existingUser != null && !existingUser.getUsername().equals(userName)) {
+           return new ResponseEntity<>(null,HttpStatus.CONFLICT);
+        }
+
+        // Update the user's fields
+        user.setUsername(updatedUserDTO.getUsername());
+        user.setFirstname(updatedUserDTO.getFirstname());
+        user.setLastname(updatedUserDTO.getLastname());
+        user.setProfilePicture(updatedUserDTO.getProfilePicture());
+        user.setCoverPicture(updatedUserDTO.getCoverPicture());
+        user.setAbout(updatedUserDTO.getAbout());
+        user.setLivesIn(updatedUserDTO.getLivesIn());
+        user.setWorksAt(updatedUserDTO.getWorksAt());
+        user.setGmail(updatedUserDTO.getGmail());
+        user.setRelationship(updatedUserDTO.getRelationship());
+        user.setCountry(updatedUserDTO.getCountry());
+
+        // Encode password if it's updated
+        if (updatedUserDTO.getPassword() != null && !updatedUserDTO.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updatedUserDTO.getPassword()));
+        }
+
+        // Save the updated user
+        User savedUser = userRepository.save(user);
+        // Send email notification only after successful update
+        if (savedUser.getGmail() != null) {
+            emailService.sendEmail(savedUser.getGmail(), "Alert!", "Your Social media account data has been updated.");
+        }
+        return new ResponseEntity<>(savedUser,HttpStatus.OK);
     }
+
 
     public String deleteUser(String userName) {
         User user=userRepository.findByUsername(userName);

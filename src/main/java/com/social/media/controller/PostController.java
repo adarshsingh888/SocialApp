@@ -58,7 +58,7 @@ public class PostController {
         return postService.deletePostById(postId,userName);
     }
     @PutMapping("/like/{postId}")
-    public ResponseEntity<?> likeDislikePost( @PathVariable ObjectId postId){
+    public ResponseEntity<String> likeDislikePost( @PathVariable ObjectId postId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         return  postService.likeDislikePost(postId,userName);

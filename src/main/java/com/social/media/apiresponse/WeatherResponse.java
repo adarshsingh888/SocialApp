@@ -1,4 +1,4 @@
-package com.social.media.apiResponse;
+package com.social.media.apiresponse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

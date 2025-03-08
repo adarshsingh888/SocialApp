@@ -1,5 +1,6 @@
 package com.social.media.controller;
 
+import com.social.media.dto.UserUpdateDTO;
 import com.social.media.entity.User;
 import com.social.media.service.EmailService;
 import com.social.media.service.UserService;
@@ -28,23 +29,20 @@ public class UserController {
     private EmailService emailService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable ObjectId id) {
+    public ResponseEntity<User> getUserById(@PathVariable ObjectId id) {
         Optional<User> user = userService.getUserById(id);
         if(user.isEmpty()){
-            return new ResponseEntity<>("User Not Found",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(user, HttpStatus.OK); // 200 OK
+        return new ResponseEntity<>(user.get(), HttpStatus.OK); // 200 OK
     }
 
 
     @PutMapping
-    public ResponseEntity<?> updateUser(@RequestBody User updatedUser) {
+    public ResponseEntity<User> updateUser(@RequestBody UserUpdateDTO userUpdateDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
-
-        User updated = userService.updateUser(userName, updatedUser);
-        if (updated == null) return new ResponseEntity<>("UserName already exits", HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(updated, HttpStatus.OK);
+        return  userService.updateUser(userName, userUpdateDTO);
     }
 
     @DeleteMapping
@@ -73,19 +71,19 @@ public class UserController {
     }
 
     @GetMapping("/unFollowedUser")
-    public ResponseEntity<?> unFollowedUser(){
+    public ResponseEntity<List<User>> unFollowedUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         List<User> users=userService.unFollowedUser(userName);
-        if(users == null || users.isEmpty()) return new ResponseEntity<>("Did not follow any User.",HttpStatus.OK);
+        if(users == null || users.isEmpty()) return new ResponseEntity<>(null,HttpStatus.OK);
         return new ResponseEntity<>(users,HttpStatus.OK);
     }
     @GetMapping("/followedUser")
-    public ResponseEntity<?> followedUser(){
+    public ResponseEntity<List<User>> followedUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         List<User> users=userService.followedUser(userName);
-        if(users == null || users.isEmpty()) return new ResponseEntity<>("Did not follow any User.",HttpStatus.OK);
+        if(users == null || users.isEmpty()) return new ResponseEntity<>(null,HttpStatus.OK);
         return new ResponseEntity<>(users,HttpStatus.OK);
     }
 }

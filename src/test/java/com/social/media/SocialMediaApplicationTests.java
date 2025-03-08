@@ -10,6 +10,7 @@ class SocialMediaApplicationTests {
 
 	@Test
 	void contextLoads() {
+		System.out.println("www");
 	}
 
 }
