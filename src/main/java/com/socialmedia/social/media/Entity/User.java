@@ -39,6 +39,7 @@ public class User  {
     private String country;
     private Set<ObjectId> followers; // List of follower IDs
     private Set<ObjectId> following;
+    private Set<ObjectId>likedPosts;
     private List<ObjectId> posts;
     private List<String> roles;
 

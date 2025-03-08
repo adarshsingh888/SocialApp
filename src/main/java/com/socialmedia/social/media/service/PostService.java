@@ -2,6 +2,7 @@ package com.socialmedia.social.media.service;
 
 import com.socialmedia.social.media.Entity.Post;
 import com.socialmedia.social.media.Entity.User;
+import com.socialmedia.social.media.dto.PostDTO;
 import com.socialmedia.social.media.repository.PostRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,8 +29,8 @@ public class PostService {
             User user= userService.findByUsername(username);
             if(user.getPosts() == null) user.setPosts(new ArrayList<>());
             post.setUserId(user.getId());
-            postRepository.save(post);
-            user.getPosts().add(post.getPostId());
+            Post newPost=  postRepository.save(post);
+            user.getPosts().add(newPost.getPostId());
             userService.saveUser(user);
             return post;
 
@@ -39,7 +41,7 @@ public class PostService {
 
         return post;
     }
-    public List<Post> getallPost(){
+    public List<Post> getAllPost(){
         return postRepository.findAll();
     }
     public Post getPostById(ObjectId postId) {
@@ -48,25 +50,24 @@ public class PostService {
     }
 
     @Transactional
-    public boolean deletepostbyId(ObjectId postId,String username) {
+    public ResponseEntity<String> deletePostById(ObjectId postId,String username) {
         try {
             Optional<Post> post = postRepository.findById(postId);
             User user = userService.findByUsername(username);
-            Optional<User> uu= userService.findById(post.get().getUserId());
-            if(!uu.get().getUsername() .equals(username) ){
-                return false;
+            if(post.isPresent() && !post.get().getUserId() .equals(user.getId()) ){
+                return new ResponseEntity<>("You are not allowed to delete this Post",HttpStatus.CONFLICT);
             }
             user.getPosts().removeIf( x -> x.equals(postId));
             userService.save(user);
             postRepository.deleteById(postId);
-            return true;
+            return new ResponseEntity<>("Post deleted successfully",HttpStatus.OK);
         }catch (Exception e){
             System.out.println(e);
-            return false;
+            return new ResponseEntity<>("Something went wrong .",HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public ResponseEntity<?> likeDislikePost(ObjectId postId, String userName) {
+    public ResponseEntity<String> likeDislikePost(ObjectId postId, String userName) {
         Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty()) {
             System.out.println("Post not found");
@@ -77,36 +78,39 @@ public class PostService {
             post.setLikes(new ArrayList<>());
         }
         User user=userService.findByUsername(userName);
-        String aa=null;
+        if(user.getLikedPosts() == null) user.setLikedPosts(new HashSet<>());
+        String msg=null;
         if (!post.getLikes().contains(user.getId())) {
-            aa="Post Liked";
+            msg="Post Liked";
             post.getLikes().add(user.getId());
+            user.getLikedPosts().add(post.getPostId());
         }else {
-            aa="Post Disliked";
+            msg="Post Disliked";
             post.getLikes().remove(user.getId());
+            user.getLikedPosts().remove(post.getPostId());
         }
         postRepository.save(post);
-        return new ResponseEntity<>(aa,HttpStatus.OK);
-
+        userService.save(user);
+        return new ResponseEntity<>(msg,HttpStatus.OK);
     }
 
 
-    public ResponseEntity<?> updatePostById(ObjectId postId, Post post, String userName) {
+    public ResponseEntity<String> updatePostById(ObjectId postId, PostDTO postDTO, String userName) {
         Optional<Post> opPost=postRepository.findById(postId);
         User user=userService.findByUsername(userName);
-        Post p=opPost.get();
-        if(!user.getId().equals(p.getUserId())){
+        Post post=null;
+        if(opPost.isPresent())  post=opPost.get();
+        else if(post == null) return  new ResponseEntity<>("Post did not found.",HttpStatus.NOT_FOUND);
+        if(!user.getId().equals(post.getUserId())){
             return new ResponseEntity<>("You are not allowed to edit this post",HttpStatus.CONFLICT);
         }
-        post.setPostId(p.getPostId());
-        post.setUserId(p.getUserId());
+        post.setImage(postDTO.getImage());
+        post.setDes(postDTO.getDes());
         postRepository.save(post);
         return new ResponseEntity<>("Updated successfully",HttpStatus.OK);
     }
 
-
-    public List<Post> getPostsofUserId(ObjectId userId){
-        List<Post> posts=postRepository.findByUserId(userId);
-        return posts;
+    public List<Post> getPostsOfUserId(ObjectId userId){
+        return postRepository.findByUserId(userId);
     }
 }

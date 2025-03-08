@@ -3,10 +3,9 @@ package com.socialmedia.social.media.Entity;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.annotation.Collation;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.lang.annotation.Documented;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 @Data
@@ -17,7 +16,7 @@ public class Post {
     private ObjectId userId;
     private String des;
     private ArrayList<ObjectId> likes;
-    private Date createdAt;
+    private LocalDateTime createdAt;
     private String image;
 
 
