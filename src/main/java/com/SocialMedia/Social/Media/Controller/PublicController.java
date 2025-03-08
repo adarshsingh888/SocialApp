@@ -1,6 +1,8 @@
 package com.SocialMedia.Social.Media.Controller;
 
 import com.SocialMedia.Social.Media.Entity.User;
+import com.SocialMedia.Social.Media.dto.LoginDTO;
+import com.SocialMedia.Social.Media.dto.UserDTO;
 import com.SocialMedia.Social.Media.service.UserDetailsImpl;
 import com.SocialMedia.Social.Media.service.UserService;
 import com.SocialMedia.Social.Media.utils.JwtUtil;
@@ -34,19 +36,23 @@ public class PublicController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody User user) {
-        if(userService.findByUsername(user.getUsername()) != null) {
+    public ResponseEntity<?> signUp(@RequestBody UserDTO userDTO) {
+        if(userService.findByUsername(userDTO.getUsername()) != null) {
             return new ResponseEntity<>("Username already exits! Please try another username.", HttpStatus.CONFLICT);
         }
-        User savedUser = userService.addnewUser(user);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED); // 201 Created
+        User user = new User();
+        user.setFirstname(userDTO.getFirstname());
+        user.setLastname(userDTO.getLastname());
+        user.setUsername(userDTO.getUsername());
+        user.setPassword(userDTO.getPassword());
+        return new ResponseEntity<>(userService.addnewUser(user), HttpStatus.CREATED); // 201 Created
     }
     @PostMapping("/login")
-    public ResponseEntity<?> logIn(@RequestBody User user){
+    public ResponseEntity<?> logIn(@RequestBody LoginDTO loginDTO){
         try{
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+                    new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
+            UserDetails userDetails = userDetailsService.loadUserByUsername(loginDTO.getUsername());
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
             return new ResponseEntity<>(jwt, HttpStatus.OK);
         }catch (Exception e){
