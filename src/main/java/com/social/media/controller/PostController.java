@@ -1,8 +1,11 @@
 package com.social.media.controller;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.social.media.entity.Post;
 import com.social.media.dto.PostDTO;
+import com.social.media.entity.User;
 import com.social.media.service.PostService;
+import com.social.media.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +19,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/post")
 public class PostController {
-
+    private final UserService userService;
     private final PostService postService;
-    public PostController(PostService postService) {
+    public PostController(UserService userService, PostService postService) {
+        this.userService = userService;
         this.postService = postService;
     }
 
@@ -36,6 +40,7 @@ public class PostController {
     @GetMapping("/get-all")
     public ResponseEntity<List<Post>> getAllPost(){
         List<Post> post=postService.getAllPost();
+        System.out.println(post.get(0));
         if(post.isEmpty()) return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(post,HttpStatus.OK) ;
     }
@@ -59,6 +64,7 @@ public class PostController {
     }
     @PutMapping("/like/{postId}")
     public ResponseEntity<String> likeDislikePost( @PathVariable ObjectId postId){
+        System.out.println(postId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         return  postService.likeDislikePost(postId,userName);
@@ -71,5 +77,12 @@ public class PostController {
             return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(posts,HttpStatus.OK);
+    }
+
+    @GetMapping("/userPostByUsername/{username}")
+    public ResponseEntity<List<Post>> getPostOfUserName(@PathVariable String username){
+        User user=userService.findByUsername(username);
+      return new ResponseEntity<>(postService.findByUserId(user.getId()),HttpStatus.OK)  ;
+
     }
 }

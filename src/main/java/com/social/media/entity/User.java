@@ -1,6 +1,8 @@
 package com.social.media.entity;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -18,6 +20,7 @@ import java.util.Set;
 public class User  {
 
     @Id
+    @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
     @NonNull
     @Indexed(unique = true)
@@ -35,12 +38,16 @@ public class User  {
     private String gmail;
     private String relationship;
     private String country;
-    private Set<ObjectId> followers; // List of follower IDs
-    private Set<ObjectId> following;
-    private Set<ObjectId>likedPosts;
+    private Set<String> followers; // List of follower IDs
+    private Set<String> following;
+    @JsonSerialize(contentUsing = ToStringSerializer.class)
+    private Set<ObjectId> likedPosts;
+    @JsonSerialize(contentUsing = ToStringSerializer.class)
     private List<ObjectId> posts;
     private List<String> roles;
 
 
+    public User(String adarshSingh) {
 
+    }
 }

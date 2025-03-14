@@ -2,6 +2,7 @@ package com.social.media.service;
 
 import com.social.media.dto.UserUpdateDTO;
 import com.social.media.entity.User;
+import com.social.media.repository.PostRepository;
 import com.social.media.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -22,7 +23,8 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private EmailService emailService;
-
+    @Autowired
+    private PostRepository postRepository;
     @Autowired
     private PasswordEncoder passwordEncoder=new BCryptPasswordEncoder();  // Inject PasswordEncoder
 //    private static final Logger logger= LoggerFactory.getLogger(UserService.class);  // after using annotation @Slf4j we dont did this line
@@ -83,15 +85,54 @@ public class UserService {
         return new ResponseEntity<>(savedUser,HttpStatus.OK);
     }
 
-
     public String deleteUser(String userName) {
-        User user=userRepository.findByUsername(userName);
+        // Find user by username
+        User user = userRepository.findByUsername(userName);
         if (user == null) {
-            return null;
+            return "User not found!";
         }
+
+        // Remove user from followers' following list (if followers exist)
+        if (user.getFollowers() != null) {
+            List<User> followers = new ArrayList<>();
+            for (String username : user.getFollowers()) {
+                User follower = userRepository.findByUsername(username);
+                if (follower != null && follower.getFollowing() != null) {
+                    follower.getFollowing().remove(userName);
+                    followers.add(follower);
+                }
+            }
+            if (!followers.isEmpty()) {
+                userRepository.saveAll(followers); // Save all updated follower users
+            }
+        }
+
+        // Remove user from following's followers list (if following exists)
+        if (user.getFollowing() != null) {
+            List<User> following = new ArrayList<>();
+            for (String username : user.getFollowing()) {
+                User followedUser = userRepository.findByUsername(username);
+                if (followedUser != null && followedUser.getFollowers() != null) {
+                    followedUser.getFollowers().remove(userName);
+                    following.add(followedUser);
+                }
+            }
+            if (!following.isEmpty()) {
+                userRepository.saveAll(following); // Save all updated following users
+            }
+        }
+
+        // Delete user's posts (if any exist)
+        if (user.getPosts() != null && !user.getPosts().isEmpty()) {
+            postRepository.deleteAllById(user.getPosts());
+        }
+
+        // Finally, delete the user
         userRepository.deleteById(user.getId());
+
         return "User deleted successfully!";
     }
+
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -99,7 +140,9 @@ public class UserService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
+
     }
+
 
     public void saveUser(User user) {
         userRepository.save(user);
@@ -113,33 +156,32 @@ public class UserService {
         userRepository.save(u);
     }
 
-    public String followUnfollow(ObjectId userId,String username) {
-        User user=userRepository.findByUsername(username);
-        Optional<User> followingUser=userRepository.findById(userId);
-        User user2=followingUser.get();
-        if(user == null) return null;
-        if(user.getFollowing()== null) user.setFollowing(new HashSet<>());
-        if(user2.getFollowers()== null) user2.setFollowers(new HashSet<>());
-        if(user.getFollowing().contains(userId)){
-            user.getFollowing().remove(userId);
-            user2.getFollowers().remove(user.getId());
-            userRepository.save(user);
-            userRepository.save(user2);
-            return "Unfollowed the User";
+    public User followUnfollow(String userName,String username) {
+        User Mainuser=userRepository.findByUsername(userName);
+        User userToFollowed=userRepository.findByUsername(username);
+        if(Mainuser == null) return null;
+        if(Mainuser.getFollowing()== null) Mainuser.setFollowing(new HashSet<>());
+        if(userToFollowed.getFollowers()== null) userToFollowed.setFollowers(new HashSet<>());
+        if(Mainuser.getFollowing().contains(username)){
+            Mainuser.getFollowing().remove(username);
+            userToFollowed.getFollowers().remove(userName);
+            userRepository.save(Mainuser);
+            userRepository.save(userToFollowed);
+            return Mainuser;
         }
         else{
-            user.getFollowing().add(userId);
-            user2.getFollowers().add(user.getId());
-            userRepository.save(user);
-            userRepository.save(user2);
-            return "User followed";
+            Mainuser.getFollowing().add(username);
+            userToFollowed.getFollowers().add(userName);
+            userRepository.save(Mainuser);
+            userRepository.save(userToFollowed);
+            return Mainuser;
         }
 
     }
 
     public List<User> unFollowedUser(String userName){
         User user=userRepository.findByUsername(userName);
-        if(user.getFollowing()==null) return null;
+        if(user.getFollowing()==null) user.setFollowing(new HashSet<>());
         return userRepository.findUnfollowedUsers(user.getFollowing(),user.getId());
     }
 

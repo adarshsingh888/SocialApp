@@ -1,5 +1,6 @@
 package com.social.media.controller;
 
+import com.social.media.dto.UserResDTO;
 import com.social.media.entity.User;
 import com.social.media.dto.LoginDTO;
 import com.social.media.dto.UserDTO;
@@ -14,6 +15,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/public")
@@ -36,7 +40,7 @@ public class PublicController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signUp(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserResDTO> signUp(@RequestBody UserDTO userDTO) {
         if(userService.findByUsername(userDTO.getUsername()) != null) {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
         }
@@ -45,19 +49,29 @@ public class PublicController {
         user.setLastname(userDTO.getLastname());
         user.setUsername(userDTO.getUsername());
         user.setPassword(userDTO.getPassword());
-        return new ResponseEntity<>(userService.addnewUser(user), HttpStatus.CREATED); // 201 Created
+        User newUser=userService.addnewUser(user);
+        if(newUser == null) return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
+        LoginDTO loginDTO=new LoginDTO();
+        loginDTO.setPassword(userDTO.getPassword());
+        loginDTO.setUsername(userDTO.getUsername());
+        return logIn(loginDTO); // 201 Created
     }
     @PostMapping("/login")
-    public ResponseEntity<String> logIn(@RequestBody LoginDTO loginDTO){
+    public ResponseEntity<UserResDTO> logIn(@RequestBody LoginDTO loginDTO){
         try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
             UserDetails userDetails = userDetailsService.loadUserByUsername(loginDTO.getUsername());
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
-            return new ResponseEntity<>(jwt, HttpStatus.OK);
+            User user=userService.findByUsername(loginDTO.getUsername());
+            UserResDTO userResDTO=new UserResDTO();
+            userResDTO.setToken(jwt);
+            userResDTO.setUser(user);
+
+            return new ResponseEntity<>(userResDTO, HttpStatus.OK);
         }catch (Exception e){
             log.error("Exception occurred while createAuthenticationToken ", e);
-            return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 

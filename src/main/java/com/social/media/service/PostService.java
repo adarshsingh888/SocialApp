@@ -113,4 +113,9 @@ public class PostService {
     public List<Post> getPostsOfUserId(ObjectId userId){
         return postRepository.findByUserId(userId);
     }
+
+    public List<Post> findByUserId(ObjectId userId) {
+         return postRepository.findByUserId(userId);
+
+    }
 }

@@ -1,0 +1,250 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PostService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.social.media.service</a>
+</div>
+
+<h1>Coverage Summary for Class: PostService (com.social.media.service)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PostService</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.8%
+  </span>
+  <span class="absValue">
+    (1/55)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PostService$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.8%
+  </span>
+  <span class="absValue">
+    (1/55)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.social.media.service;
+&nbsp;
+&nbsp;import com.social.media.entity.Post;
+&nbsp;import com.social.media.entity.User;
+&nbsp;import com.social.media.dto.PostDTO;
+&nbsp;import com.social.media.repository.PostRepository;
+&nbsp;import org.bson.types.ObjectId;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class PostService {</b>
+&nbsp;    @Autowired
+&nbsp;    private  PostRepository postRepository;
+&nbsp;    @Autowired
+&nbsp;     private  UserService userService;
+&nbsp;
+&nbsp;    @Transactional
+&nbsp;    public Post createpost(Post post,String username){
+&nbsp;        try{
+<b class="nc">&nbsp;            User user= userService.findByUsername(username);</b>
+<b class="nc">&nbsp;            if(user.getPosts() == null) user.setPosts(new ArrayList&lt;&gt;());</b>
+<b class="nc">&nbsp;            post.setUserId(user.getId());</b>
+<b class="nc">&nbsp;            Post newPost=  postRepository.save(post);</b>
+<b class="nc">&nbsp;            user.getPosts().add(newPost.getPostId());</b>
+<b class="nc">&nbsp;            userService.saveUser(user);</b>
+<b class="nc">&nbsp;            return post;</b>
+&nbsp;
+&nbsp;        }catch (Exception e){
+<b class="nc">&nbsp;            System.out.println(e);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        return post;</b>
+&nbsp;    }
+&nbsp;    public List&lt;Post&gt; getAllPost(){
+<b class="nc">&nbsp;        return postRepository.findAll();</b>
+&nbsp;    }
+&nbsp;    public Post getPostById(ObjectId postId) {
+<b class="nc">&nbsp;        Optional&lt;Post&gt; optionalPost = postRepository.findById(postId);</b>
+<b class="nc">&nbsp;        return optionalPost.orElse(null); // Returns Post if present, else null</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional
+&nbsp;    public ResponseEntity&lt;String&gt; deletePostById(ObjectId postId,String username) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Optional&lt;Post&gt; post = postRepository.findById(postId);</b>
+<b class="nc">&nbsp;            User user = userService.findByUsername(username);</b>
+<b class="nc">&nbsp;            if(post.isPresent() &amp;&amp; !post.get().getUserId() .equals(user.getId()) ){</b>
+<b class="nc">&nbsp;                return new ResponseEntity&lt;&gt;(&quot;You are not allowed to delete this Post&quot;,HttpStatus.CONFLICT);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            user.getPosts().removeIf( x -&gt; x.equals(postId));</b>
+<b class="nc">&nbsp;            userService.save(user);</b>
+<b class="nc">&nbsp;            postRepository.deleteById(postId);</b>
+<b class="nc">&nbsp;            return new ResponseEntity&lt;&gt;(&quot;Post deleted successfully&quot;,HttpStatus.OK);</b>
+&nbsp;        }catch (Exception e){
+<b class="nc">&nbsp;            System.out.println(e);</b>
+<b class="nc">&nbsp;            return new ResponseEntity&lt;&gt;(&quot;Something went wrong .&quot;,HttpStatus.INTERNAL_SERVER_ERROR);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResponseEntity&lt;String&gt; likeDislikePost(ObjectId postId, String userName) {
+<b class="nc">&nbsp;        Optional&lt;Post&gt; optionalPost = postRepository.findById(postId);</b>
+<b class="nc">&nbsp;        if (optionalPost.isEmpty()) {</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Post not found&quot;);</b>
+<b class="nc">&nbsp;            return new ResponseEntity&lt;&gt;(&quot;Post did not found&quot;,HttpStatus.NOT_FOUND);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Post post = optionalPost.get();</b>
+<b class="nc">&nbsp;        if (post.getLikes() == null) {</b>
+<b class="nc">&nbsp;            post.setLikes(new ArrayList&lt;&gt;());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        User user=userService.findByUsername(userName);</b>
+<b class="nc">&nbsp;        if(user.getLikedPosts() == null) user.setLikedPosts(new HashSet&lt;&gt;());</b>
+<b class="nc">&nbsp;        String msg=null;</b>
+<b class="nc">&nbsp;        if (!post.getLikes().contains(user.getId())) {</b>
+<b class="nc">&nbsp;            msg=&quot;Post Liked&quot;;</b>
+<b class="nc">&nbsp;            post.getLikes().add(user.getId());</b>
+<b class="nc">&nbsp;            user.getLikedPosts().add(post.getPostId());</b>
+&nbsp;        }else {
+<b class="nc">&nbsp;            msg=&quot;Post Disliked&quot;;</b>
+<b class="nc">&nbsp;            post.getLikes().remove(user.getId());</b>
+<b class="nc">&nbsp;            user.getLikedPosts().remove(post.getPostId());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        postRepository.save(post);</b>
+<b class="nc">&nbsp;        userService.save(user);</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(msg,HttpStatus.OK);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public ResponseEntity&lt;String&gt; updatePostById(ObjectId postId, PostDTO postDTO, String userName) {
+<b class="nc">&nbsp;        Optional&lt;Post&gt; opPost=postRepository.findById(postId);</b>
+<b class="nc">&nbsp;        User user=userService.findByUsername(userName);</b>
+<b class="nc">&nbsp;        Post post=null;</b>
+<b class="nc">&nbsp;        if(opPost.isPresent())  post=opPost.get();</b>
+<b class="nc">&nbsp;        else if(post == null) return  new ResponseEntity&lt;&gt;(&quot;Post did not found.&quot;,HttpStatus.NOT_FOUND);</b>
+<b class="nc">&nbsp;        if(!user.getId().equals(post.getUserId())){</b>
+<b class="nc">&nbsp;            return new ResponseEntity&lt;&gt;(&quot;You are not allowed to edit this post&quot;,HttpStatus.CONFLICT);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        post.setImage(postDTO.getImage());</b>
+<b class="nc">&nbsp;        post.setDes(postDTO.getDes());</b>
+<b class="nc">&nbsp;        postRepository.save(post);</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(&quot;Updated successfully&quot;,HttpStatus.OK);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Post&gt; getPostsOfUserId(ObjectId userId){
+<b class="nc">&nbsp;        return postRepository.findByUserId(userId);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-09 16:27</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > WeatherServices</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.social.media.service</a>
+</div>
+
+<h1>Coverage Summary for Class: WeatherServices (com.social.media.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WeatherServices</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.social.media.service;
+&nbsp;
+&nbsp;import com.social.media.apiresponse.WeatherResponse;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpMethod;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.client.RestTemplate;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class WeatherServices {</b>
+&nbsp;
+&nbsp;    @Value(&quot;${weather.api.key}&quot;)
+&nbsp;    private String apiKey;
+&nbsp;
+&nbsp;    private static final String API_URL = &quot;http://api.weatherapi.com/v1/current.json?q=%s&amp;key=%s&quot;;
+&nbsp;    private static final String API=&quot;http://localhost:8080/social/public/adduser&quot;;
+&nbsp;    @Autowired
+&nbsp;    private RestTemplate restTemplate;
+&nbsp;
+&nbsp;    public WeatherResponse getWeather(String city) {
+<b class="nc">&nbsp;        String finalAPI = String.format(API_URL, city, apiKey);</b>
+&nbsp;        //User user= (User) User.builder().username(&quot;adarsh_singh&quot;).password(&quot;12345&quot;).build();
+&nbsp;       // HttpEntity&lt;User&gt; httpEntity=new HttpEntity&lt;&gt;(user);
+<b class="nc">&nbsp;        ResponseEntity&lt;WeatherResponse&gt; res = restTemplate.exchange(finalAPI, HttpMethod.GET,/*httpEntity*/null, WeatherResponse.class);</b>
+<b class="nc">&nbsp;        return res.getBody();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-09 16:27</div>
+</div>
+</body>
+</html>

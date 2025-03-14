@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/user")
 public class UserController {
     @Autowired
@@ -29,13 +30,13 @@ public class UserController {
     @Autowired
     private EmailService emailService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable ObjectId id) {
-        Optional<User> user = userService.getUserById(id);
-        if(user.isEmpty()){
+    @GetMapping("/{username}")
+    public ResponseEntity<User> getUserById(@PathVariable String username) {
+        User user = userService.findByUsername(username);
+        if(user == null){
             return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(user.get(), HttpStatus.OK); // 200 OK
+        return new ResponseEntity<>(user, HttpStatus.OK); // 200 OK
     }
 
 
@@ -64,11 +65,11 @@ public class UserController {
     public ResponseEntity<WeatherResponse> getWeather(@PathVariable String place){
         return new ResponseEntity<>(weatherServices.getWeather(place),HttpStatus.OK);
     }
-    @PostMapping("/{userId}")
-    public String followUnfollow(@PathVariable ObjectId userId){
+    @PutMapping("/{username}")
+    public User followUnfollow(@PathVariable String username){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
-        return userService.followUnfollow(userId,userName);
+        return userService.followUnfollow(userName,username);
     }
 
     @GetMapping("/unFollowedUser")
@@ -76,6 +77,7 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         List<User> users=userService.unFollowedUser(userName);
+        //System.out.println(users);
         if(users == null || users.isEmpty()) return new ResponseEntity<>(null,HttpStatus.OK);
         return new ResponseEntity<>(users,HttpStatus.OK);
     }
