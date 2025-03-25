@@ -50,7 +50,7 @@ public class PostController {
         if(post == null) return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(post,HttpStatus.OK) ;
     }
-    @PutMapping("/update/{postId}")
+    @PutMapping("/{postId}")
     public ResponseEntity<String> updateById(@PathVariable ObjectId postId,@RequestBody PostDTO postDTO){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();

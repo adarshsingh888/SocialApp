@@ -47,7 +47,4 @@ public class User  {
     private List<String> roles;
 
 
-    public User(String adarshSingh) {
-
-    }
 }

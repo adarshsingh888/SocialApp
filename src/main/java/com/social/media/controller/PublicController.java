@@ -23,15 +23,19 @@ import java.util.List;
 @RequestMapping("/public")
 @Slf4j
 public class PublicController {
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private UserDetailsImpl userDetailsService;
+
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsImpl userDetailsService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    public PublicController(UserService userService, AuthenticationManager authenticationManager, UserDetailsImpl userDetailsService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+    }
 
 
     @GetMapping("/health-check")
@@ -42,7 +46,7 @@ public class PublicController {
     @PostMapping("/signup")
     public ResponseEntity<UserResDTO> signUp(@RequestBody UserDTO userDTO) {
         if(userService.findByUsername(userDTO.getUsername()) != null) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            return new ResponseEntity<>( HttpStatus.CONFLICT);
         }
         User user = new User();
         user.setFirstname(userDTO.getFirstname());
