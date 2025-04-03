@@ -40,7 +40,6 @@ public class PostController {
     @GetMapping("/get-all")
     public ResponseEntity<List<Post>> getAllPost(){
         List<Post> post=postService.getAllPost();
-        System.out.println(post.get(0));
         if(post.isEmpty()) return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(post,HttpStatus.OK) ;
     }
@@ -64,7 +63,6 @@ public class PostController {
     }
     @PutMapping("/like/{postId}")
     public ResponseEntity<String> likeDislikePost( @PathVariable ObjectId postId){
-        System.out.println(postId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         return  postService.likeDislikePost(postId,userName);

@@ -15,10 +15,13 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:1234/")); // Your frontend URL
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+
+        // Allow all origins, methods, and headers
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(true); // If using authentication
+
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
