@@ -21,8 +21,8 @@ import java.util.*;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private EmailService emailService;
+//    @Autowired
+//    private EmailService emailService;
     @Autowired
     private PostRepository postRepository;
     @Autowired
@@ -80,7 +80,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
         // Send email notification only after successful update
         if (savedUser.getGmail() != null) {
-            emailService.sendEmail(savedUser.getGmail(), "Alert!", "Your Social media account data has been updated.");
+//            emailService.sendEmail(savedUser.getGmail(), "Alert!", "Your Social media account data has been updated.");
         }
         return new ResponseEntity<>(savedUser,HttpStatus.OK);
     }

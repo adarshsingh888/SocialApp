@@ -27,8 +27,8 @@ public class UserController {
     @Autowired
     private WeatherServices weatherServices;
 
-    @Autowired
-    private EmailService emailService;
+//    @Autowired
+//    private EmailService emailService;
 
     @GetMapping("/{username}")
     public ResponseEntity<User> getUserById(@PathVariable String username) {
@@ -53,9 +53,9 @@ public class UserController {
         String userName = authentication.getName();
         User user=userService.findByUsername(userName);
         if(user.getGmail() != null) {
-            emailService.sendEmail(
-                    user.getGmail(), user.getFirstname()+", your account is deleted.",
-                    user.getUsername()+" account is deleted.");
+//            emailService.sendEmail(
+//                    user.getGmail(), user.getFirstname()+", your account is deleted.",
+//                    user.getUsername()+" account is deleted.");
         }
         String message = userService.deleteUser(userName);
         if(message== null) return new ResponseEntity<>("User Not Found",HttpStatus.NOT_FOUND);
