@@ -1,0 +1,29 @@
+spring:
+application:
+  name: Social-Media
+
+data:
+  mongodb:
+    uri: ${MONGO_URI}
+    auto-index-creation: true
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /social
+
+weather:
+  api:
+    key: ${WEATHER_API_KEY}
